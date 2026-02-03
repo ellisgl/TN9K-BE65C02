@@ -9,10 +9,10 @@
         "verilog-65C02-microcode/generic/regfile.v",
         "verilog-65C02-microcode/generic/cpu.v",
         "6522/6522.srcs/sources_1/new/6522.v",
-        "src/clock_divider.v",
-        "src/reset.v",
-        "src/ROM.v",
-        "src/RAM.v",
-        "src/top.v"
+        "rtl/clock_divider.v",
+        "rtl/reset.v",
+        "rtl/ROM.v",
+        "rtl/RAM.v",
+        "rtl/top.v"
     ]
 }
