@@ -89,8 +89,8 @@ module top #(
     // STATUS = 0x5001
     // CMD    = 0x5002
     // CTRL   = 0x5003
-    UART uart (
-        .clk(clk),
+    UART #(.clk_freq_hz(27_000_000)) uart (
+        .clk(sys_clk),
         .rst(reset),
         .rw(~cpu_we),
         .rs0(address[0]),

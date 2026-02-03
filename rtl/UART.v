@@ -22,7 +22,9 @@ module UART #(
     output wire        tx,       // To the real world
     output wire        irq
 );
-    parameter baud_divisor = clk_freq_hz / (baud_rate * oversample);
+    // Calculate baud divisor with rounding for accuracy
+    localparam integer baud_divisor_calc = (clk_freq_hz + (baud_rate * oversample / 2)) / (baud_rate * oversample);
+    localparam integer BAUD_DIV = (baud_divisor_calc < 1) ? 1 : baud_divisor_calc;
 
     //==========================================================================
     // Register Map (W65C51N compatible)
@@ -70,7 +72,7 @@ module UART #(
     //==========================================================================
     // Baud Rate Generator
     //==========================================================================
-    reg [$clog2(baud_divisor)-1:0] baud_counter;
+    reg [$clog2(BAUD_DIV)-1:0] baud_counter;
     reg baud_tick;
 
     always @(posedge clk) begin
@@ -78,7 +80,7 @@ module UART #(
             baud_counter <= 0;
             baud_tick <= 0;
         end else begin
-            if (baud_counter >= baud_divisor - 1) begin
+            if (baud_counter >= BAUD_DIV - 1) begin
                 baud_counter <= 0;
                 baud_tick <= 1;
             end else begin
