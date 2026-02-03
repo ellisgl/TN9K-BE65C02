@@ -2,24 +2,7 @@
 ; LCD 16x2 Driver (HD44780 via PCF8574)
 ; 4-bit mode via I2C
 ; ========================================
-
-; Export public routines
-    .global LCD_Init
-    .global LCD_Clear
-    .global LCD_Home
-    .global LCD_SetCursor
-    .global LCD_WriteChar
-    .global LCD_WriteString
-
-; Import I2C routines
-    .extern I2C_Init
-    .extern I2C_SetAddress
-    .extern I2C_Start
-    .extern I2C_Stop
-    .extern I2C_WriteByte
-
-; Import VIA base
-    .extern VIA_PB
+    .include "inc/I2C.s"
 
 ; ========================================
 ; LCD Commands

@@ -2,16 +2,6 @@
 ; Main Program
 ; Demonstrates LCD 16x2 via I2C
 ; ========================================
-
-; Import drivers
-    .extern I2C_Init
-    .extern LCD_Init
-    .extern LCD_Clear
-    .extern LCD_SetCursor
-    .extern LCD_WriteChar
-    .extern LCD_WriteString
-    .extern LCD_StrPtr
-
 ; ========================================
 ; Hardware Definitions
 ; ========================================
@@ -30,7 +20,7 @@ LCD_I2C_ADDR = $27
 ; Program Start
 ; ========================================
     .org $8000
-
+    .include "inc/1602-I2C.s"
 start:
     ; Initialize I2C
     JSR I2C_Init
