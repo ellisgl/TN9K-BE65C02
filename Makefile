@@ -13,25 +13,24 @@ rom ?= src/eater.s
 clean:
 	- rm -f rtl/build/*.mem rtl/build/*.bin rtl/build/*.json rtl/build/*.fs
 
-# Compile rom 
+# Compile rom
 rom:
 	@echo Using ROM: $(rom)
 	tools/vasm6502_oldstyle -Fbin -dotdir -c02 -o rtl/build/eater.bin $(rom)
 	python tools/gen_mem.py rtl/build/eater.bin rtl/build/eater.mem 32768
 
 synth:
-	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json TN9K-BE65C02.json"
+	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json rtl/build/TN9K-BE65C02.json"
 
-pnr: 
-	nextpnr-himbaechel --json TN9K-BE65C02.json --freq 27 --write TN9K-BE65C02_pnr.json --device ${DEVICE} --vopt family=${FAMILY} --vopt cst=${BOARD}.cst
+pnr:
+	nextpnr-himbaechel --json rtl/build/TN9K-BE65C02.json --freq 27 --write rtl/build/TN9K-BE65C02_pnr.json --device ${DEVICE} --vopt family=${FAMILY} --vopt cst=${BOARD}.cst
 
 fs:
-	gowin_pack -d ${FAMILY} -o TN9K-BE65C02.fs TN9K-BE65C02_pnr.json
+	gowin_pack -d ${FAMILY} -o rtl/build/TN9K-BE65C02.fs rtl/build/TN9K-BE65C02_pnr.json
 
 load:
-	openFPGALoader -b ${BOARD} TN9K-BE65C02.fs -f
+	openFPGALoader -b ${BOARD} rtl/build/TN9K-BE65C02.fs -f
 
 all: rom synth pnr fs load
 
 .PHONY: clean all
-

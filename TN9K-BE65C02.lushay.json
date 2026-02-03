@@ -13,6 +13,7 @@
         "rtl/reset.v",
         "rtl/ROM.v",
         "rtl/RAM.v",
+        "rtl/UART.v",
         "rtl/top.v"
     ]
 }
