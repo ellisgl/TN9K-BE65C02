@@ -1,0 +1,275 @@
+{
+  "creator": "Yosys 0.61+44 (git sha1 57ac113b7, clang++ 18.1.8 -fPIC -O3)",
+  "modules": {
+    "reset": {
+      "attributes": {
+        "cells_not_processed": 1,
+        "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:8.1-33.10"
+      },
+      "ports": {
+        "clk": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "reset_n": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "reset": {
+          "direction": "output",
+          "bits": [ 4 ]
+        }
+      },
+      "cells": {
+        "$not$/home/ellis/TN9K-BE65C02/rtl/reset.v:20$2": {
+          "hide_name": 1,
+          "type": "$not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:20.13-20.21"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "Y": [ 5 ]
+          }
+        },
+        "$not$/home/ellis/TN9K-BE65C02/rtl/reset.v:26$3": {
+          "hide_name": 1,
+          "type": "$not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:26.19-26.27"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "Y": [ 6 ]
+          }
+        },
+        "$or$/home/ellis/TN9K-BE65C02/rtl/reset.v:32$4": {
+          "hide_name": 1,
+          "type": "$or",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:32.20-32.27"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 7 ],
+            "B": [ 8 ],
+            "Y": [ 4 ]
+          }
+        },
+        "$procdff$11": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:19.5-29.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 9 ],
+            "Q": [ 7 ]
+          }
+        },
+        "$procdff$12": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:19.5-29.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 10 ],
+            "Q": [ 8 ]
+          }
+        },
+        "$procmux$6": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:20.13-20.21|/home/ellis/TN9K-BE65C02/rtl/reset.v:20.9-28.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ "1" ],
+            "B": [ 7 ],
+            "S": [ 3 ],
+            "Y": [ 10 ]
+          }
+        },
+        "$procmux$9": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:20.13-20.21|/home/ellis/TN9K-BE65C02/rtl/reset.v:20.9-28.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ "1" ],
+            "B": [ 6 ],
+            "S": [ 3 ],
+            "Y": [ 9 ]
+          }
+        }
+      },
+      "netnames": {
+        "$0\\q0[0:0]": {
+          "hide_name": 1,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:19.5-29.8"
+          }
+        },
+        "$0\\q1[0:0]": {
+          "hide_name": 1,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:19.5-29.8"
+          }
+        },
+        "$not$/home/ellis/TN9K-BE65C02/rtl/reset.v:20$2_Y": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:20.13-20.21"
+          }
+        },
+        "$not$/home/ellis/TN9K-BE65C02/rtl/reset.v:26$3_Y": {
+          "hide_name": 1,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:26.19-26.27"
+          }
+        },
+        "$or$/home/ellis/TN9K-BE65C02/rtl/reset.v:32$4_Y": {
+          "hide_name": 1,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:32.20-32.27"
+          }
+        },
+        "$procmux$10_CMP": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+          }
+        },
+        "$procmux$6_Y": {
+          "hide_name": 1,
+          "bits": [ 10 ],
+          "attributes": {
+          }
+        },
+        "$procmux$7_CMP": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+          }
+        },
+        "$procmux$9_Y": {
+          "hide_name": 1,
+          "bits": [ 9 ],
+          "attributes": {
+          }
+        },
+        "clk": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:9.17-9.20"
+          }
+        },
+        "q0": {
+          "hide_name": 0,
+          "bits": [ 7 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:15.9-15.11"
+          }
+        },
+        "q1": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:16.9-16.11"
+          }
+        },
+        "reset": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:11.17-11.22"
+          }
+        },
+        "reset_n": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "/home/ellis/TN9K-BE65C02/rtl/reset.v:10.17-10.24"
+          }
+        }
+      }
+    }
+  }
+}
