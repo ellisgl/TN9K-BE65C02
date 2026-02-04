@@ -28,7 +28,6 @@ module UART #(
     //==========================================================================
     // Register Map (W65C51N compatible)
     //==========================================================================
-    wire chip_select = cs;
     wire [1:0] reg_addr = {rs1, rs0};
 
     //==========================================================================
@@ -61,7 +60,7 @@ module UART #(
     };
 
     //==========================================================================
-    // Baud Rate Generator - generates a tick every 1/16th of a bit period
+    // Baud Rate Generator
     //==========================================================================
     reg [$clog2(BAUD_DIV):0] baud_counter;
     reg baud_tick;
@@ -82,7 +81,7 @@ module UART #(
     end
 
     //==========================================================================
-    // Transmitter - COMPLETELY REWRITTEN for correct timing
+    // Transmitter
     //==========================================================================
     reg [7:0] tx_shift_reg;
     reg [3:0] tx_bit_index;    // 0=start, 1-8=data, 9=stop
@@ -117,7 +116,7 @@ module UART #(
                     if (tx_tick_count >= oversample - 1) begin
                         // Move to next bit
                         tx_tick_count <= 0;
-                        
+
                         if (tx_bit_index == 9) begin
                             // Stop bit complete
                             tx_active <= 0;
@@ -125,7 +124,7 @@ module UART #(
                         end else begin
                             // Move to next bit
                             tx_bit_index <= tx_bit_index + 1;
-                            
+
                             if (tx_bit_index == 0) begin
                                 // Start bit done, output first data bit
                                 tx_out <= tx_shift_reg[0];
@@ -150,7 +149,7 @@ module UART #(
     assign tx = tx_out;
 
     //==========================================================================
-    // Receiver - Keep original RX logic
+    // Receiver
     //==========================================================================
     reg [3:0] rx_state;
     reg [3:0] rx_bit_count;
@@ -260,7 +259,7 @@ module UART #(
             control_reg <= 8'h00;
             dcd <= 0;
             dsr <= 0;
-        end else if (chip_select) begin
+        end else if (cs) begin
             if (rw) begin
                 case (reg_addr)
                     2'b00: begin
