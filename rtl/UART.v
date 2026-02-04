@@ -2,11 +2,11 @@
 `default_nettype none
 
 ////////////////////////////////////////////////////////////////////////////////
-// UART Module
-// W65C51N compatible UART with configurable clock and baud rate.
+// UART Module - Completely Rewritten TX Logic
+// W65C51N compatible UART with corrected timing
 ////////////////////////////////////////////////////////////////////////////////
 module UART #(
-    parameter clk_freq_hz = 1_000_000,
+    parameter clk_freq_hz = 27_000_000,
     parameter baud_rate   = 9600,
     parameter oversample  = 16
 ) (
@@ -22,21 +22,12 @@ module UART #(
     output wire        tx,       // To the real world
     output wire        irq
 );
-    // Calculate baud divisor with rounding for accuracy
-    localparam integer baud_divisor_calc = (clk_freq_hz + (baud_rate * oversample / 2)) / (baud_rate * oversample);
-    localparam integer BAUD_DIV = (baud_divisor_calc < 1) ? 1 : baud_divisor_calc;
+    // Simple baud divisor - no fancy rounding
+    localparam integer BAUD_DIV = clk_freq_hz / (baud_rate * oversample);
 
     //==========================================================================
     // Register Map (W65C51N compatible)
     //==========================================================================
-    // RS1 RS0  R/W  Register
-    //  0   0    R   RX Data Register
-    //  0   0    W   TX Data Register
-    //  0   1    R   Status Register
-    //  0   1    W   Programmed Reset
-    //  1   0   R/W  Command Register
-    //  1   1   R/W  Control Register
-
     wire chip_select = cs;
     wire [1:0] reg_addr = {rs1, rs0};
 
@@ -45,8 +36,8 @@ module UART #(
     //==========================================================================
     reg [7:0] tx_data_reg;
     reg [7:0] rx_data_reg;
-    reg [7:0] command_reg;   // Command register
-    reg [7:0] control_reg;   // Control register
+    reg [7:0] command_reg;
+    reg [7:0] control_reg;
 
     // Status Register bits
     reg parity_error;
@@ -54,25 +45,25 @@ module UART #(
     reg overrun_error;
     reg rx_data_ready;
     reg tx_data_empty;
-    reg dcd;                 // Data Carrier Detect (not implemented, tied low)
-    reg dsr;                 // Data Set Ready (not implemented, tied low)
+    reg dcd;
+    reg dsr;
     reg irq_flag;
 
     wire [7:0] status_reg = {
-        irq_flag,           // bit 7: IRQ flag
-        dsr,                // bit 6: DSR (tied low)
-        dcd,                // bit 5: DCD (tied low)
-        tx_data_empty,      // bit 4: Transmitter Data Register Empty
-        rx_data_ready,      // bit 3: Receiver Data Register Full
-        overrun_error,      // bit 2: Overrun error
-        framing_error,      // bit 1: Framing error
-        parity_error        // bit 0: Parity error
+        irq_flag,
+        dsr,
+        dcd,
+        tx_data_empty,
+        rx_data_ready,
+        overrun_error,
+        framing_error,
+        parity_error
     };
 
     //==========================================================================
-    // Baud Rate Generator
+    // Baud Rate Generator - generates a tick every 1/16th of a bit period
     //==========================================================================
-    reg [$clog2(BAUD_DIV)-1:0] baud_counter;
+    reg [$clog2(BAUD_DIV):0] baud_counter;
     reg baud_tick;
 
     always @(posedge clk) begin
@@ -91,93 +82,75 @@ module UART #(
     end
 
     //==========================================================================
-    // Transmitter
+    // Transmitter - COMPLETELY REWRITTEN for correct timing
     //==========================================================================
-    reg [3:0] tx_state;
-    reg [3:0] tx_bit_count;
     reg [7:0] tx_shift_reg;
-    reg       tx_reg;
-    reg       tx_busy;
-    reg [3:0] tx_sample_count;
-
-    localparam TX_IDLE  = 4'd0;
-    localparam TX_START = 4'd1;
-    localparam TX_DATA  = 4'd2;
-    localparam TX_STOP  = 4'd3;
-
-    assign tx = tx_reg;
+    reg [3:0] tx_bit_index;    // 0=start, 1-8=data, 9=stop
+    reg [3:0] tx_tick_count;   // Count oversample ticks within a bit
+    reg       tx_active;
+    reg       tx_out;
 
     always @(posedge clk) begin
         if (rst) begin
-            tx_state <= TX_IDLE;
-            tx_reg <= 1'b1;
-            tx_busy <= 0;
-            tx_bit_count <= 0;
-            tx_sample_count <= 0;
+            tx_out <= 1'b1;          // Idle high
+            tx_active <= 0;
             tx_data_empty <= 1;
+            tx_bit_index <= 0;
+            tx_tick_count <= 0;
+            tx_shift_reg <= 0;
         end else begin
-            case (tx_state)
-                TX_IDLE: begin
-                    tx_reg <= 1'b1;
-                    if (!tx_data_empty && !tx_busy) begin
-                        tx_shift_reg <= tx_data_reg;
-                        tx_busy <= 1;
-                        tx_data_empty <= 1;
-                        tx_state <= TX_START;
-                        tx_sample_count <= 0;
-                    end
+            if (!tx_active) begin
+                // Idle state - waiting for data
+                tx_out <= 1'b1;
+                if (!tx_data_empty) begin
+                    // Start transmission
+                    tx_shift_reg <= tx_data_reg;
+                    tx_data_empty <= 1;
+                    tx_active <= 1;
+                    tx_bit_index <= 0;
+                    tx_tick_count <= 0;
+                    tx_out <= 1'b0;  // Start bit
                 end
-
-                TX_START: begin
-                    if (baud_tick) begin
-                        if (tx_sample_count >= oversample - 1) begin
-                            tx_sample_count <= 0;
-                            tx_reg <= 1'b0;  // Start bit
-                            tx_state <= TX_DATA;
-                            tx_bit_count <= 0;
+            end else begin
+                // Transmitting
+                if (baud_tick) begin
+                    if (tx_tick_count >= oversample - 1) begin
+                        // Move to next bit
+                        tx_tick_count <= 0;
+                        
+                        if (tx_bit_index == 9) begin
+                            // Stop bit complete
+                            tx_active <= 0;
+                            tx_out <= 1'b1;
                         end else begin
-                            tx_sample_count <= tx_sample_count + 1;
-                        end
-                    end
-                end
-
-                TX_DATA: begin
-                    if (baud_tick) begin
-                        if (tx_sample_count >= oversample - 1) begin
-                            tx_sample_count <= 0;
-                            tx_reg <= tx_shift_reg[0];
-                            tx_shift_reg <= {1'b0, tx_shift_reg[7:1]};
-                            if (tx_bit_count >= 7) begin
-                                tx_state <= TX_STOP;
+                            // Move to next bit
+                            tx_bit_index <= tx_bit_index + 1;
+                            
+                            if (tx_bit_index == 0) begin
+                                // Start bit done, output first data bit
+                                tx_out <= tx_shift_reg[0];
+                                tx_shift_reg <= {1'b0, tx_shift_reg[7:1]};
+                            end else if (tx_bit_index < 8) begin
+                                // Data bits
+                                tx_out <= tx_shift_reg[0];
+                                tx_shift_reg <= {1'b0, tx_shift_reg[7:1]};
                             end else begin
-                                tx_bit_count <= tx_bit_count + 1;
+                                // Stop bit
+                                tx_out <= 1'b1;
                             end
-                        end else begin
-                            tx_sample_count <= tx_sample_count + 1;
                         end
+                    end else begin
+                        tx_tick_count <= tx_tick_count + 1;
                     end
                 end
-
-                TX_STOP: begin
-                    if (baud_tick) begin
-                        if (tx_sample_count >= oversample - 1) begin
-                            tx_sample_count <= 0;
-                            tx_reg <= 1'b1;  // Stop bit
-                            tx_busy <= 0;
-                            tx_state <= TX_IDLE;
-                        end else begin
-                            tx_sample_count <= tx_sample_count + 1;
-                        end
-                    end
-                end
-
-                default: tx_state <= TX_IDLE;
-            endcase
+            end
         end
     end
 
+    assign tx = tx_out;
+
     //==========================================================================
-    // Receiver
+    // Receiver - Keep original RX logic
     //==========================================================================
     reg [3:0] rx_state;
     reg [3:0] rx_bit_count;
@@ -190,7 +163,6 @@ module UART #(
     localparam RX_DATA  = 4'd2;
     localparam RX_STOP  = 4'd3;
 
-    // Synchronize RX input
     always @(posedge clk) begin
         if (rst)
             rx_sync <= 3'b111;
@@ -213,7 +185,7 @@ module UART #(
             case (rx_state)
                 RX_IDLE: begin
                     rx_sample_count <= 0;
-                    if (!rx_filtered) begin  // Start bit detected
+                    if (!rx_filtered) begin
                         rx_state <= RX_START;
                     end
                 end
@@ -222,11 +194,11 @@ module UART #(
                     if (baud_tick) begin
                         if (rx_sample_count >= (oversample / 2) - 1) begin
                             rx_sample_count <= 0;
-                            if (!rx_filtered) begin  // Confirm start bit
+                            if (!rx_filtered) begin
                                 rx_state <= RX_DATA;
                                 rx_bit_count <= 0;
                             end else begin
-                                rx_state <= RX_IDLE;  // False start
+                                rx_state <= RX_IDLE;
                             end
                         end else begin
                             rx_sample_count <= rx_sample_count + 1;
@@ -254,16 +226,16 @@ module UART #(
                     if (baud_tick) begin
                         if (rx_sample_count >= oversample - 1) begin
                             rx_sample_count <= 0;
-                            if (rx_filtered) begin  // Valid stop bit
+                            if (rx_filtered) begin
                                 if (rx_data_ready) begin
-                                    overrun_error <= 1;  // Data not read yet
+                                    overrun_error <= 1;
                                 end else begin
                                     rx_data_reg <= rx_shift_reg;
                                     rx_data_ready <= 1;
                                 end
                                 framing_error <= 0;
                             end else begin
-                                framing_error <= 1;  // Missing stop bit
+                                framing_error <= 1;
                             end
                             rx_state <= RX_IDLE;
                         end else begin
@@ -290,11 +262,10 @@ module UART #(
             dsr <= 0;
         end else if (chip_select) begin
             if (rw) begin
-                // Read operation
                 case (reg_addr)
                     2'b00: begin
                         data_out <= rx_data_reg;
-                        rx_data_ready <= 0;  // Clear on read
+                        rx_data_ready <= 0;
                         overrun_error <= 0;
                         framing_error <= 0;
                         parity_error <= 0;
@@ -304,14 +275,12 @@ module UART #(
                     2'b11: data_out <= control_reg;
                 endcase
             end else begin
-                // Write operation
                 case (reg_addr)
                     2'b00: begin
                         tx_data_reg <= data_in;
                         tx_data_empty <= 0;
                     end
                     2'b01: begin
-                        // Programmed reset
                         command_reg <= 8'h00;
                         control_reg <= 8'h00;
                         overrun_error <= 0;
@@ -328,8 +297,6 @@ module UART #(
     //==========================================================================
     // Interrupt Logic
     //==========================================================================
-    // Command register bit 1: RX IRQ enable
-    // Command register bit 3,2: TX interrupt control
     wire rx_irq_enable = command_reg[1];
     wire tx_irq_enable = command_reg[3:2] == 2'b01;
 
@@ -342,7 +309,7 @@ module UART #(
         end
     end
 
-    assign irq = ~irq_flag;  // Active low interrupt
+    assign irq = ~irq_flag;
 
 endmodule
 

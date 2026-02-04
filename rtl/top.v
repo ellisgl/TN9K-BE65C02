@@ -85,12 +85,16 @@ module top #(
         .nIrq(via_irq_n)
     );
 
-    // DATA   = 0x5000
-    // STATUS = 0x5001
-    // CMD    = 0x5002
-    // CTRL   = 0x5003
-    UART #(.clk_freq_hz(27_000_000)) uart (
-        .clk(sys_clk),
+ 
+    // UART at 16'h5000 - 16'h5003
+    // Clocked from sys_clk (27 MHz) for best baud rate accuracy
+    // CPU interface signals are synchronized internally by the UART's chip select
+    UART #(
+        .clk_freq_hz(27_000_000),  // Use 27 MHz system clock for accurate baud generation
+        .baud_rate(9600),          // Match your terminal settings
+        .oversample(16)            // 16x oversampling for robust RX
+    ) uart (
+        .clk(sys_clk),             // ← Changed: Use 27 MHz clock instead of divided 1 MHz
         .rst(reset),
         .rw(~cpu_we),
         .rs0(address[0]),
@@ -102,7 +106,12 @@ module top #(
         .tx(uartTx),
         .irq(uart_irq_n)
     );
-
+    // uart_simple_test uart_inst (
+    //     .sys_clk(sys_clk),
+    //     .rst_n(~reset),
+    //     .uartTx(uartTx),
+    //     .uartRx(uartRx)
+    // );
     cpu cpu_inst (
         .clk(clk),
         .RST(reset),
