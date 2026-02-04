@@ -85,7 +85,6 @@ module top #(
         .nIrq(via_irq_n)
     );
 
- 
     // UART at 16'h5000 - 16'h5003
     // Clocked from sys_clk (27 MHz) for best baud rate accuracy
     // CPU interface signals are synchronized internally by the UART's chip select
@@ -106,12 +105,7 @@ module top #(
         .tx(uartTx),
         .irq(uart_irq_n)
     );
-    // uart_simple_test uart_inst (
-    //     .sys_clk(sys_clk),
-    //     .rst_n(~reset),
-    //     .uartTx(uartTx),
-    //     .uartRx(uartRx)
-    // );
+
     cpu cpu_inst (
         .clk(clk),
         .RST(reset),
@@ -148,6 +142,10 @@ module top #(
         ram_cs  ? ram_data_out  :
         via_cs  ? via_data_out  :
         uart_cs ? uart_data_out : 8'hXX;
+
+    // select RX source: while `reset` asserted use external serial RX to
+    // avoid echoing any startup/transient TX activity; after reset use loopback
+    assign uart_rx_in = reset ? uartRx : uartTx;
 
     // "When using external asynchronous memory, you should register the "AD" signals"
     always @(posedge clk) begin
