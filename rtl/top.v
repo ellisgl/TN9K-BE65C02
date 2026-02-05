@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 `default_nettype none
 module top #(
-    parameter integer CLK_DIVISOR = 27  // Clock divider for CPU domain (overridable in sim)
+    parameter integer SYS_CLK_HZ  = 27_000_000, // Input oscillator frequency
+    parameter integer CLK_DIVISOR = 13          // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
 )(
     input  wire       sys_clk,
     input  wire       rst_n,
@@ -11,7 +12,8 @@ module top #(
     inout  wire [7:0] PA       // VIA6522 Port A
 );
 
-    wire        clk;
+    localparam  integer CPU_HZ = SYS_CLK_HZ / (2 * CLK_DIVISOR);
+    wire        clk;  // Divided clock, about 1.042 MHz with DIVISOR=13 from 27 MHz input
     wire        reset;
     reg  [15:0] address;
     wire [15:0] address_unregistered;
@@ -24,19 +26,18 @@ module top #(
     wire        rom_cs;
     wire        ram_cs;
     wire        uart_cs;
-
-    wire  [7:0] via_data_out;
+    wire  [7:0] via_do;
     wire        via_irq_n;
     wire        uart_irq_n;
-    wire  [7:0] rom_data_out;
-    wire  [7:0] ram_data_out;
-    wire  [7:0] uart_data_out;
-    wire  [7:0] pbOut;
-    wire  [7:0] pbMask;
-    wire  [7:0] paOut;
-    wire  [7:0] paMask;
+    wire  [7:0] rom_do;
+    wire  [7:0] ram_do;
+    wire  [7:0] uart_do;
+    wire  [7:0] pb_out;
+    wire  [7:0] pb_mask;
+    wire  [7:0] pa_out;
+    wire  [7:0] pa_mask;
 
-    // Instantiate Clock Divider (e.g., divide 27 MHz to 1 MHz)
+    // Instantiate Clock Divider (e.g., divide 27 MHz to ~1 MHz)
     clock_divider #(
         .DIVISOR(CLK_DIVISOR)
     ) clk_div_inst (
@@ -57,14 +58,14 @@ module top #(
         .WE(cpu_we),
         .CS(ram_cs),
         .DI(cpu_do),
-        .DO(ram_data_out)
+        .DO(ram_do)
     );
 
     // 32KB ROM at 16'h8000 - 16'hFFFF
     rom rom_inst (
         .ADDR(address[14:0]),
         .CS(rom_cs),
-        .DO(rom_data_out)
+        .DO(rom_do)
     );
 
     // VIA6522 at 16'h6000 - 16'h6007
@@ -75,35 +76,34 @@ module top #(
         .rs(address[3:0]),
         .rWb(~cpu_we),
         .dataIn(cpu_do),
-        .dataOut(via_data_out),
+        .dataOut(via_do),
         .paIn(),
-        .paOut(paOut),
-        .paMask(paMask),
+        .paOut(pa_out),
+        .paMask(pa_mask),
         .pbIn(),
-        .pbOut(pbOut),
-        .pbMask(pbMask),
+        .pbOut(pb_out),
+        .pbMask(pb_mask),
         .nIrq(via_irq_n)
     );
 
     // UART at 16'h5000 - 16'h5003
-    // Clocked from sys_clk (27 MHz) for best baud rate accuracy
-    // CPU interface signals are synchronized internally by the UART's chip select
-    UART #(
-        .clk_freq_hz(27_000_000),  // Use 27 MHz system clock for accurate baud generation
-        .baud_rate(9600),          // Match your terminal settings
-        .oversample(16)            // 16x oversampling for robust RX
-    ) uart (
-        .clk(sys_clk),             // ← Changed: Use 27 MHz clock instead of divided 1 MHz
-        .rst(reset),
-        .rw(~cpu_we),
-        .rs0(address[0]),
-        .rs1(address[1]),
-        .cs(uart_cs),
-        .data_in(cpu_do),
-        .rx(uartRx),
-        .data_out(uart_data_out),
-        .tx(uartTx),
-        .irq(uart_irq_n)
+    reg uart_rx_in;
+    
+    gs_uart_top #(
+        .CLK_HZ(CPU_HZ),          // Match actual CPU clock derived from divider
+        .BIT_RATE(9600),
+        .PAYLOAD_BITS(8)
+    ) uart_inst (
+        .clk(clk),
+        .resetn(~reset),
+        .ADDR(address[1:0]),
+        .CS(uart_cs),
+        .WE(cpu_we),
+        .DI(cpu_do),
+        .DO(uart_do),
+        .IRQ(uart_irq_n),
+        .uart_rxd(uart_rx_in),
+        .uart_txd(uartTx)
     );
 
     cpu cpu_inst (
@@ -124,8 +124,8 @@ module top #(
     genvar i;
     generate
         for (i = 0; i < 8; i = i + 1) begin : pb_tristate
-            assign PB[i] = pbMask[i] ? pbOut[i] : 1'bz;
-            assign PA[i] = paMask[i] ? paOut[i] : 1'bz;
+            assign PB[i] = pb_mask[i] ? pb_out[i] : 1'bz;
+            assign PA[i] = pa_mask[i] ? pa_out[i] : 1'bz;
         end
     endgenerate
 
@@ -138,18 +138,16 @@ module top #(
     assign via_cs     = (address[15:4]  == 12'h600);    // 0x6000 - 0x600F
     assign rom_cs     = address[15];                    // 0x8000 - 0xFFFF
     assign cpu_di     =
-        rom_cs  ? rom_data_out  :
-        ram_cs  ? ram_data_out  :
-        via_cs  ? via_data_out  :
-        uart_cs ? uart_data_out : 8'hXX;
-
-    // select RX source: while `reset` asserted use external serial RX to
-    // avoid echoing any startup/transient TX activity; after reset use loopback
-    assign uart_rx_in = reset ? uartRx : uartTx;
-
-    // "When using external asynchronous memory, you should register the "AD" signals"
+        rom_cs  ? rom_do  :
+        ram_cs  ? ram_do  :
+        via_cs  ? via_do  :
+        uart_cs ? uart_do : 8'hXX;
+    
+        // "When using external asynchronous memory, you should register the "AD" signals"
+    // Also register uart_rx_in to break long paths and resample UART input
     always @(posedge clk) begin
-        address <= address_unregistered;
+        address    <= address_unregistered;
+        uart_rx_in <= uartRx;
     end
 
 endmodule

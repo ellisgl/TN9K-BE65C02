@@ -11,9 +11,11 @@
         "6522/6522.srcs/sources_1/new/6522.v",
         "rtl/clock_divider.v",
         "rtl/reset.v",
-        "rtl/ROM.v",
-        "rtl/RAM.v",
-        "rtl/UART_CDC.v",
+        "rtl/rom.v",
+        "rtl/ram.v",
+        "rtl/uart_rx.v",
+        "rtl/uart_tx.v",
+        "rtl/uart_wrapper.v",
         "rtl/top.v"
     ]
 }

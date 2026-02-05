@@ -4,3 +4,6 @@
 [submodule "verilog-65C02-microcode"]
 	path = verilog-65C02-microcode
 	url = https://github.com/notcbw/verilog-65C02-microcode.git
+[submodule "uart"]
+	path = uart
+	url = https://github.com/ben-marshall/uart.git
