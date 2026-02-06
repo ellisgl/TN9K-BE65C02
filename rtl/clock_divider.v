@@ -3,10 +3,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Clock Divider Module
 // Generates a divided clock output from input clock using a counter.
-// Default divisor is 27 (e.g., 27 MHz -> 1 MHz).
+// The output clock toggles every DIVISOR input clock cycles, 
+// resulting in a frequency of clk_in / (2 * DIVISOR).
+// Default divisor is 13 (e.g., 27 MHz -> ~1.042 MHz).
 ////////////////////////////////////////////////////////////////////////////////
 module clock_divider #(
-    parameter DIVISOR = 27  // Clock division factor (must be even for 50% duty cycle)
+    parameter DIVISOR = 13  // Clock division factor (must be even for 50% duty cycle)
 ) (
     input  wire clk_in,   // Input clock
     output reg  clk_out   // Divided output clock
