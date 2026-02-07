@@ -1,5 +1,5 @@
   .org $8000
-  .org $ff00
+  .org $fe00
 
 XAML  = $24                            ; Last "opened" location Low
 XAMH  = $25                            ; Last "opened" location High
@@ -180,11 +180,11 @@ PRHEX:
 
 ECHO:
                 PHA                    ; Save A.
+TXWAIT:         LDA     ACIA_STATUS    ; Wait for TX ready (bit 4).
+                AND     #$10
+                BEQ     TXWAIT
+                PLA                    ; Restore A (character).
                 STA     ACIA_DATA      ; Output character.
-                LDA     #$FF           ; Initialize delay loop.
-TXDELAY:        DEC                    ; Decrement A.
-                BNE     TXDELAY        ; Until A gets to 0.
-                PLA                    ; Restore A.
                 RTS                    ; Return.
 
   .org $FFFA
