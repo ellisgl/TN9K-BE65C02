@@ -13,9 +13,10 @@
         "rtl/reset.v",
         "rtl/rom.v",
         "rtl/ram.v",
-        "rtl/uart_rx.v",
-        "rtl/uart_tx.v",
-        "rtl/uart_wrapper.v",
+        "rtl/acia_brgen.v",
+        "rtl/acia_rx.v",
+        "rtl/acia_tx.v",
+        "rtl/acia.v",
         "rtl/top.v"
     ]
 }
