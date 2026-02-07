@@ -15,7 +15,6 @@ A port of Ben Eater’s 65C02 computer for the Tang Nano 9K FPGA, with enhanceme
 - **6551 ACIA**: Fast/flexible serial interface ([6551-ACIA/README.md](6551-ACIA/README.md))
 - **SMON Monitor**: Direct assembler and memory monitor ([smon6502/README.md](smon6502/README.md))
 - **I2C LCD Driver**: 16x2 LCD via PCF8574 ([docs/1602-I2C.md](docs/1602-I2C.md))
-- **UART**: W65C51N-compatible module ([docs/UART.md](docs/UART.md))
 
 ## Build Instructions
 
