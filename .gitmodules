@@ -7,9 +7,6 @@
 [submodule "uart"]
 	path = uart
 	url = https://github.com/ben-marshall/uart.git
-[submodule "smon6502"]
-	path = smon6502
-	url = https://github.com/dhansel/smon6502.git
 [submodule "6551-ACIA"]
 	path = 6551-ACIA
 	url = https://github.com/ellisgl/6551-ACIA.git
