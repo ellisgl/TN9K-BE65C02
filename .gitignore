@@ -1,3 +1,4 @@
 rtl/build/*
 !rtl/build/.empty
 ___module_export.json
+smon6502/config.asm
