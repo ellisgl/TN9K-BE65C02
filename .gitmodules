@@ -10,3 +10,6 @@
 [submodule "6551-ACIA"]
 	path = 6551-ACIA
 	url = https://github.com/ellisgl/6551-ACIA.git
+[submodule "smon6502"]
+	path = smon6502
+	url = https://github.com/ellisgl/smon6502

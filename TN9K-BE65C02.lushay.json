@@ -1,6 +1,10 @@
 {
     "name": "TN9k-BE65C02",
     "includedFiles": [
+        "rtl/clock_divider.v",
+        "rtl/reset.v",
+        "rtl/rom.v",
+        "rtl/ram.v",
         "verilog-65C02-microcode/generic/abh.v",
         "verilog-65C02-microcode/generic/abl.v",
         "verilog-65C02-microcode/generic/alu.v",
@@ -9,14 +13,10 @@
         "verilog-65C02-microcode/generic/regfile.v",
         "verilog-65C02-microcode/generic/cpu.v",
         "6522/6522.srcs/sources_1/new/6522.v",
-        "rtl/clock_divider.v",
-        "rtl/reset.v",
-        "rtl/rom.v",
-        "rtl/ram.v",
-        "rtl/acia_brgen.v",
-        "rtl/acia_rx.v",
-        "rtl/acia_tx.v",
-        "rtl/acia.v",
+        "6551-ACIA/rtl/acia_brgen.v",
+        "6551-ACIA/rtl/acia_rx.v",
+        "6551-ACIA/rtl/acia_tx.v",
+        "6551-ACIA/rtl/acia.v",
         "rtl/top.v"
     ]
 }

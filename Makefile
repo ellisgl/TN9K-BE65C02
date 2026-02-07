@@ -19,6 +19,16 @@ rom:
 	tools/vasm6502_oldstyle -Fbin -dotdir -c02 -o rtl/build/eater.bin $(rom)
 	python tools/gen_mem.py rtl/build/eater.bin rtl/build/eater.mem 32768
 
+# Quick targets for specific ROMs
+basic:
+	$(MAKE) rom rom=smon6502/basic.asm
+
+smon:
+	$(MAKE) rom rom=smon6502/smon.asm
+
+wozmon:
+	$(MAKE) rom rom=src/wozmon.s
+
 synth:
 	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json rtl/build/TN9K-BE65C02.json"
 
