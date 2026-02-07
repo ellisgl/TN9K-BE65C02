@@ -2,7 +2,7 @@
 `default_nettype none
 module top #(
     parameter integer SYS_CLK_HZ  = 27_000_000, // Input oscillator frequency
-    parameter integer CLK_DIVISOR = 13          // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
+    parameter integer CLK_DIVISOR = 7          // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
 )(
     input  wire       sys_clk,
     input  wire       rst_n,
@@ -13,7 +13,7 @@ module top #(
 );
 
     localparam  integer CPU_HZ = SYS_CLK_HZ / (2 * CLK_DIVISOR);
-    wire        clk;  // Divided clock, about 1.042 MHz with DIVISOR=13 from 27 MHz input
+    wire        clk;  // Divided clock, about 1.9286 MHz with DIVISOR=7 from 27 MHz input
     wire        reset;
     reg  [15:0] address;
     wire [15:0] address_unregistered;
@@ -87,8 +87,6 @@ module top #(
     );
 
     // UART at 16'h5000 - 16'h5003
-    reg uart_rx_in;
-    
     gs_uart_top #(
         .CLK_HZ(CPU_HZ),          // Match actual CPU clock derived from divider
         .BIT_RATE(9600),
@@ -102,7 +100,7 @@ module top #(
         .DI(cpu_do),
         .DO(uart_do),
         .IRQ(uart_irq_n),
-        .uart_rxd(uart_rx_in),
+        .uart_rxd(uartRx),
         .uart_txd(uartTx)
     );
 
@@ -147,7 +145,6 @@ module top #(
     // Also register uart_rx_in to break long paths and resample UART input
     always @(posedge clk) begin
         address    <= address_unregistered;
-        uart_rx_in <= uartRx;
     end
 
 endmodule

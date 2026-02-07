@@ -1,9 +1,11 @@
 `timescale 1ns / 1ns
+`default_nettype none
 //////////////////////////////////////////////////////////////////////////////////
 //
-// Simple UART Wrapper for 8-bit system
+// Simple UART Wrapper for 8-bit system - FIXED VERSION
 // Wraps UART modules from https://github.com/ben-marshall/uart/
-// Stolen from: https://github.com/m1geo/BE6502-FPGA
+//
+// FIX: Latches uart_rx_data when uart_rx_valid pulses
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -21,12 +23,11 @@ module gs_uart_top (
 );
 
 // UART parameters
-// Clock frequency in hertz.
 parameter CLK_HZ = 1_000_000;
 parameter BIT_RATE = 115200;
-parameter PAYLOAD_BITS = 8; // if not 8, sanity check the DO mux.
+parameter PAYLOAD_BITS = 8;
 
-// UART RX (https://github.com/ben-marshall/uart)
+// UART RX
 wire [PAYLOAD_BITS-1:0] uart_rx_data;
 wire uart_rx_valid;
 wire uart_rx_break;
@@ -35,66 +36,74 @@ uart_rx #(
     .PAYLOAD_BITS(PAYLOAD_BITS),
     .CLK_HZ(CLK_HZ)
 ) i_uart_rx(
-    .clk          (clk),           // Top level system clock input.
-    .resetn       (resetn),        // Asynchronous active low reset.
-    .uart_rxd     (uart_rxd),      // UART Recieve pin.
-    .uart_rx_en   (1'b1),          // Recieve enable
-    .uart_rx_break(uart_rx_break), // Did we get a BREAK message?
-    .uart_rx_valid(uart_rx_valid), // Valid data recieved and available.
-    .uart_rx_data (uart_rx_data)   // The recieved data.
+    .clk          (clk),
+    .resetn       (resetn),
+    .uart_rxd     (uart_rxd),
+    .uart_rx_en   (1'b1),
+    .uart_rx_break(uart_rx_break),
+    .uart_rx_valid(uart_rx_valid),
+    .uart_rx_data (uart_rx_data)
 );
 
-    // UART TX (https://github.com/ben-marshall/uart)
-    wire [PAYLOAD_BITS-1:0]  uart_tx_data;
-    wire uart_tx_busy;
-    wire uart_tx_en;
-    uart_tx #(
-        .BIT_RATE(BIT_RATE),
-        .PAYLOAD_BITS(PAYLOAD_BITS),
-        .CLK_HZ(CLK_HZ)
-    ) i_uart_tx(
-        .clk          (clk),           // Top level system clock input.
-        .resetn       (resetn),        // Asynchronous active low reset.
-        .uart_txd     (uart_txd),      // UART transmit pin.
-        .uart_tx_en   (uart_tx_en),    // Send the data on uart_tx_data
-        .uart_tx_busy (uart_tx_busy),  // Module busy sending previous item.
-        .uart_tx_data (uart_tx_data)   // The data to be sent
-    );
+// UART TX
+wire [PAYLOAD_BITS-1:0]  uart_tx_data;
+wire uart_tx_busy;
+wire uart_tx_en;
+uart_tx #(
+    .BIT_RATE(BIT_RATE),
+    .PAYLOAD_BITS(PAYLOAD_BITS),
+    .CLK_HZ(CLK_HZ)
+) i_uart_tx(
+    .clk          (clk),
+    .resetn       (resetn),
+    .uart_txd     (uart_txd),
+    .uart_tx_en   (uart_tx_en),
+    .uart_tx_busy (uart_tx_busy),
+    .uart_tx_data (uart_tx_data)
+);
 
-    // Databus CPU-Read Logic
-    reg uart_rx_break_r;
-    reg uart_rx_valid_r;
-    always @ (posedge clk) begin
-        if (~resetn) begin
+// Databus CPU-Read Logic
+reg uart_rx_break_r;
+reg uart_rx_valid_r;
+reg [7:0] uart_rx_data_r;  // ← NEW: Latch the received data!
+
+always @ (posedge clk) begin
+    if (~resetn) begin
+        uart_rx_break_r <= 1'b0;
+        uart_rx_valid_r <= 1'b0;
+        uart_rx_data_r  <= 8'h00;  // ← NEW
+    end else begin
+        // Latch UART Break
+        if (uart_rx_break)
+            uart_rx_break_r <= 1'b1;
+        else if (CS & ~WE & (ADDR == 2'b01))
             uart_rx_break_r <= 1'b0;
+            
+        // Latch UART RX Valid AND Data  ← FIXED
+        if (uart_rx_valid) begin
+            uart_rx_valid_r <= 1'b1;
+            uart_rx_data_r  <= uart_rx_data;  // ← NEW: Latch data when valid
+        end else if (CS & ~WE & (ADDR == 2'b01)) begin
             uart_rx_valid_r <= 1'b0;
-        end else begin
-            // Latch UART Break
-            if (uart_rx_break)
-                uart_rx_break_r <= 1'b1;
-            else if (CS & ~WE & (ADDR == 2'b01))
-                uart_rx_break_r <= 1'b0;
-            // Latch UART RX Valid
-            if (uart_rx_valid)
-                uart_rx_valid_r <= 1'b1;
-            else if (CS & ~WE & (ADDR == 2'b01))
-                uart_rx_valid_r <= 1'b0;
         end
     end
+end
 
+wire [7:0] status_register;
+// Map rx_valid to bit3 to satisfy Wozmon's AND #$08 poll for "key ready"
+assign status_register = {4'b0000, uart_rx_valid_r, uart_tx_busy, uart_rx_break_r, 1'b0};
 
-    wire [7:0] status_register;
-    // Map rx_valid to bit3 to satisfy Wozmon's AND #$08 poll for "key ready"
-    assign status_register = {4'b0000, uart_rx_valid_r, uart_tx_busy, uart_rx_break_r, 1'b0};
-    assign DO = (ADDR == 2'b00) ? uart_rx_data[7:0] :
-                (ADDR == 2'b01) ? status_register   :
-                8'hFF;
+// ← FIXED: Use latched data instead of direct uart_rx_data
+assign DO = (ADDR == 2'b00) ? uart_rx_data_r[7:0] :  // Was: uart_rx_data[7:0]
+            (ADDR == 2'b01) ? status_register   :
+            8'hFF;
 
-    // Generate IRQ output
-    assign IRQ = uart_rx_break_r | uart_rx_valid_r;
+// Generate IRQ output
+assign IRQ = uart_rx_break_r | uart_rx_valid_r;
 
-    // Databus CPU-Write Logic
-    assign uart_tx_data = DI;
-    assign uart_tx_en = (CS & WE & (ADDR == 2'b00)); // write to data register only
+// Databus CPU-Write Logic
+assign uart_tx_data = DI;
+assign uart_tx_en = (CS & WE & (ADDR == 2'b00)); // write to data register only
 
 endmodule
+`default_nettype wire

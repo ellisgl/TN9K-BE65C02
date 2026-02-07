@@ -8,7 +8,7 @@ INCLUDED_FILES := $(shell jq -r '.includedFiles | join(" ")' TN9K-BE65C02.lushay
 # Default ROM source (can be overridden on the `make` command-line)
 rom ?= src/eater.s
 
-# yosys -p "read_verilog $(jq -r '.includedFiles | join(" ")' your_file.json); synth_gowin -top top -json TN9k-BE65C02.json"
+# yosys -p "read_verilog $(jq -r '.includedFiles | join(" ")' your_file.json); synth_gowin -top top -json TN9K-BE65C02.json"
 
 clean:
 	- rm -f rtl/build/*.mem rtl/build/*.bin rtl/build/*.json rtl/build/*.fs
