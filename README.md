@@ -26,7 +26,7 @@ A port of Ben Eater’s 65C02 computer for the Tang Nano 9K FPGA, with enhanceme
 	```
 	make all
 	```
-	 - `make smon` or `make wozmon` to quickly build and copy the respective ROMs.
+	 - `make brosloadedr` or `make wozmon` to quickly build and copy the respective ROMs.
 	 - To synthesize, place, generate bitstream, and load onto the FPGA after building a ROM, run:
 		 ```
 		 make synth pnr fs load
