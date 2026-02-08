@@ -10,3 +10,6 @@
 [submodule "6551-ACIA"]
 	path = 6551-ACIA
 	url = https://github.com/ellisgl/6551-ACIA.git
+[submodule "6502brosloader"]
+	path = 6502brosloader
+	url = https://github.com/ellisgl/6502brosloader.git

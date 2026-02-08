@@ -4,7 +4,7 @@ A port of Ben Eater’s 65C02 computer for the Tang Nano 9K FPGA, with enhanceme
 
 ## Features
 
-- Runs at ~1.929 MHz (configurable in smon6502/config.asm)
+- Runs at ~1.929 MHz (You'll need to set this in smon6502/config.asm)
 - Quality-of-life improvements: uses 6551 ACIA for faster serial communication (no 65C51N bug)
 - Modular peripherals: VIA 6522 (GPIO/timer/interrupt), UART, RAM, ROM, LCD (I2C)
 - Includes classic monitor programs (SMON, WOZMON) and demo software
@@ -13,7 +13,7 @@ A port of Ben Eater’s 65C02 computer for the Tang Nano 9K FPGA, with enhanceme
 
 - **VIA 6522**: Verilog implementation for GPIO/timer/interrupts ([6522/README.md](6522/README.md))
 - **6551 ACIA**: Fast/flexible serial interface ([6551-ACIA/README.md](6551-ACIA/README.md))
-- **SMON Monitor**: Direct assembler and memory monitor ([smon6502/README.md](smon6502/README.md))
+
 - **I2C LCD Driver**: 16x2 LCD via PCF8574 ([docs/1602-I2C.md](docs/1602-I2C.md))
 
 ## Build Instructions

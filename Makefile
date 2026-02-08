@@ -29,6 +29,9 @@ smon:
 wozmon:
 	$(MAKE) rom rom=src/wozmon.s
 
+brosloader:
+	$(MAKE) rom rom=6502brosloader/brosloader.s
+
 synth:
 	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json rtl/build/TN9K-BE65C02.json"
 
