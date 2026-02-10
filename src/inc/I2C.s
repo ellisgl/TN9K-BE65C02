@@ -2,18 +2,6 @@
 ; I2C Driver for 6522 VIA
 ; Bit-banged I2C on PB0 (SDA) and PB1 (SCL)
 ; ========================================
-
-; Export public routines
-    .global I2C_Init
-    .global I2C_Start
-    .global I2C_Stop
-    .global I2C_WriteByte
-    .global I2C_SetAddress
-
-; Import VIA definitions
-    .extern VIA_PB
-    .extern VIA_DDRB
-
 ; ========================================
 ; Zero Page Variables
 ; ========================================

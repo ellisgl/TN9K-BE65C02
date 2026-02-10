@@ -2,16 +2,19 @@
 `default_nettype none
 module top #(
     parameter integer SYS_CLK_HZ  = 27_000_000, // Input oscillator frequency
-    parameter integer CLK_DIVISOR = 7           // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
+    parameter integer CLK_DIVISOR = 14          // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
 )(
     input  wire       sys_clk,
     input  wire       rst_n,
     input  wire       uartRx,
     input  wire       uartCts,
+    input  wire       sdMiso,
     output wire       uartTx,
     output wire       uartRts,
-    inout  wire [7:0] PB,      // VIA6522 Port B
-    inout  wire [7:0] PA       // VIA6522 Port A
+    output wire       sdClk,
+    output wire       sdCs,
+    output wire       sdMosi,
+    inout  wire [7:0] PB      // VIA6522 Port B
 );
 
     localparam  integer CPU_HZ = SYS_CLK_HZ / (2 * CLK_DIVISOR);
@@ -37,8 +40,14 @@ module top #(
     wire  [7:0] uart_do;
     wire  [7:0] pb_out;
     wire  [7:0] pb_mask;
+    wire  [7:0] PA;
     wire  [7:0] pa_out;
     wire  [7:0] pa_mask;
+    
+    assign sdMiso = PA[1];
+    assign sdMosi = PA[2];
+    assign sdClk  = PA[3];
+    assign sdCs   = PA[4];
 
     // Instantiate Clock Divider (e.g., divide 27 MHz to ~1 MHz)
     clock_divider #(
@@ -90,23 +99,6 @@ module top #(
     );
 
     // UART at 16'h5000 - 16'h5003
-    // gs_uart_top #(
-    //     .CLK_HZ(CPU_HZ),          // Match actual CPU clock derived from divider
-    //     .BIT_RATE(9600),
-    //     .PAYLOAD_BITS(8)
-    // ) uart_inst (
-    //     .clk(clk),
-    //     .resetn(~reset),
-    //     .ADDR(address[1:0]),
-    //     .CS(uart_cs),
-    //     .WE(cpu_we),
-    //     .DI(cpu_do),
-    //     .DO(uart_do),
-    //     .IRQ(uart_irq_n),
-    //     .uart_rxd(uartRx),
-    //     .uart_txd(uartTx)
-    // );
-
     ACIA #(
         .XTLI_FREQ(XTLI_FREQ)
     ) uart_inst (
@@ -125,6 +117,7 @@ module top #(
         .TXD(uartTx),
         .IRQn(uart_irq_n)
     );
+
     cpu cpu_inst (
         .clk(clk),
         .RST(reset),

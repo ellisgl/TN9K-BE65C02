@@ -20,17 +20,17 @@ rom:
 	python tools/gen_mem.py rtl/build/eater.bin rtl/build/eater.mem 32768
 
 # Quick targets for specific ROMs
-basic:
-	$(MAKE) rom rom=smon6502/basic.asm
-
-smon:
-	$(MAKE) rom rom=smon6502/smon.asm
+sdcard:
+	$(MAKE) rom rom=src/sdcard.s
 
 wozmon:
 	$(MAKE) rom rom=src/wozmon.s
 
 brosloader:
 	$(MAKE) rom rom=6502brosloader/brosloader.s
+
+i2c1602:
+	$(MAKE) rom rom=src/1602-I2C-demo.s
 
 synth:
 	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json rtl/build/TN9K-BE65C02.json"
