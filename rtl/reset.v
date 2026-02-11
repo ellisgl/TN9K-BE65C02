@@ -1,10 +1,10 @@
+`timescale 1ns / 1ps
+`default_nettype none
 ////////////////////////////////////////////////////////////////////////////////
 // Reset Synchronizer Module
 // Synchronizes asynchronous reset input to clock domain using a 2-stage
 // flip-flop chain to prevent metastability. Output is active-high reset.
 ////////////////////////////////////////////////////////////////////////////////
-`timescale 1ns / 1ps
-`default_nettype none
 module reset (
     input  wire clk,     // Clock signal
     input  wire reset_n, // Asynchronous active-low reset input

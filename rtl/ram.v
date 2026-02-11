@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 `default_nettype none
-
 ////////////////////////////////////////////////////////////////////////////////
 // Simple Synchronous RAM Module
 // 16k x 8-bit RAM with synchronous write and asynchronous read.

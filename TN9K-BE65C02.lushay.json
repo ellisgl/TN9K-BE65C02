@@ -5,6 +5,7 @@
         "rtl/reset.v",
         "rtl/rom.v",
         "rtl/ram.v",
+        "rtl/spi_controller.v",
         "verilog-65C02-microcode/generic/abh.v",
         "verilog-65C02-microcode/generic/abl.v",
         "verilog-65C02-microcode/generic/alu.v",

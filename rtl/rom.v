@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 `default_nettype none
-
 ////////////////////////////////////////////////////////////////////////////////
 // ROM Module
 // 32k x 8-bit Read-Only Memory initialized from external hex file.

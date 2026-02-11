@@ -20,9 +20,6 @@ rom:
 	python tools/gen_mem.py rtl/build/eater.bin rtl/build/eater.mem 32768
 
 # Quick targets for specific ROMs
-sdcard:
-	$(MAKE) rom rom=src/sdcard.s
-
 wozmon:
 	$(MAKE) rom rom=src/wozmon.s
 

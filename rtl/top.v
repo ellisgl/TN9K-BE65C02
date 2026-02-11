@@ -2,7 +2,7 @@
 `default_nettype none
 module top #(
     parameter integer SYS_CLK_HZ  = 27_000_000, // Input oscillator frequency
-    parameter integer CLK_DIVISOR = 14          // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
+    parameter integer CLK_DIVISOR = 7           // Divides sys_clk; clk = sys_clk / (2 * DIVISOR)
 )(
     input  wire       sys_clk,
     input  wire       rst_n,
@@ -14,7 +14,8 @@ module top #(
     output wire       sdClk,
     output wire       sdCs,
     output wire       sdMosi,
-    inout  wire [7:0] PB      // VIA6522 Port B
+    inout  wire [7:0] PB,      // VIA6522 Port B
+    inout  wire [7:0] PA       // VIA6522 Port A
 );
 
     localparam  integer CPU_HZ = SYS_CLK_HZ / (2 * CLK_DIVISOR);
@@ -40,14 +41,8 @@ module top #(
     wire  [7:0] uart_do;
     wire  [7:0] pb_out;
     wire  [7:0] pb_mask;
-    wire  [7:0] PA;
     wire  [7:0] pa_out;
     wire  [7:0] pa_mask;
-    
-    assign sdMiso = PA[1];
-    assign sdMosi = PA[2];
-    assign sdClk  = PA[3];
-    assign sdCs   = PA[4];
 
     // Instantiate Clock Divider (e.g., divide 27 MHz to ~1 MHz)
     clock_divider #(
@@ -57,7 +52,7 @@ module top #(
         .clk_out(clk)
     );
 
-        reset reset_inst (
+    reset reset_inst (
         .clk(clk),
         .reset_n(rst_n),
         .reset(reset)
@@ -144,11 +139,12 @@ module top #(
     // CPU Interrupt ORing
     assign cpu_irq    = ~via_irq_n | ~uart_irq_n; // CPU input is active high
 
-    // CPU DIN MUX
+    // CPU DIN MU X
     assign ram_cs     = (address[15:14] == 2'b00);      // 0x0000 - 0x3FFF
     assign uart_cs    = (address[15:4]  == 12'h500);    // 0x5000 - 0x500F
     assign via_cs     = (address[15:4]  == 12'h600);    // 0x6000 - 0x600F
     assign rom_cs     = address[15];                    // 0x8000 - 0xFFFF
+
     assign cpu_di     =
         rom_cs  ? rom_do  :
         ram_cs  ? ram_do  :
