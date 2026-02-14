@@ -29,6 +29,9 @@ brosloader:
 i2c1602:
 	$(MAKE) rom rom=src/1602-I2C-demo.s
 
+sdcard:
+	$(MAKE) rom rom=src/sd_card_demo.s
+
 synth:
 	yosys -p "read_verilog $(INCLUDED_FILES); synth_gowin -top top -json rtl/build/TN9K-BE65C02.json"
 
