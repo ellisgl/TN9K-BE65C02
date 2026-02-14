@@ -1,6 +1,3 @@
-[submodule "6522"]
-	path = 6522
-	url = https://github.com/CompuSAR/6522.git
 [submodule "verilog-65C02-microcode"]
 	path = verilog-65C02-microcode
 	url = https://github.com/notcbw/verilog-65C02-microcode.git
@@ -13,3 +10,6 @@
 [submodule "6502brosloader"]
 	path = 6502brosloader
 	url = https://github.com/ellisgl/6502brosloader.git
+[submodule "6522-VIA"]
+	path = 6522-VIA
+	url = https://github.com/ellisgl/6522-VIA.git

@@ -108,6 +108,38 @@ LCD_WriteChar:
     JSR _WriteData
     RTS
 
+; LCD_WriteHex: Write a byte as two hex characters
+; Inputs: A = byte to print
+LCD_WriteHex:
+    PHA
+    ; High nibble
+    LSR A
+    LSR A
+    LSR A
+    LSR A
+    JSR _HexToAscii
+    JSR LCD_WriteChar
+    ; Low nibble
+    PLA
+    AND #$0F
+    JSR _HexToAscii
+    JSR LCD_WriteChar
+    RTS
+
+; _HexToAscii: Convert nibble to ASCII hex character
+; Inputs: A = nibble (0-15)
+; Outputs: A = ASCII character ('0'-'9', 'A'-'F')
+_HexToAscii:
+    CMP #$0A
+    BCC _HexToAscii_Digit
+    ; A-F
+    ADC #$36        ; 'A' - 10 - 1 (carry is set)
+    RTS
+_HexToAscii_Digit:
+    ; 0-9
+    ADC #$30        ; '0'
+    RTS
+
 ; LCD_WriteString: Write null-terminated string
 ; Inputs: LCD_StrPtr (16-bit pointer)
 ; CRITICAL FIX: Must preserve Y register because I2C_WriteByte destroys it!

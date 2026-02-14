@@ -5,7 +5,6 @@
         "rtl/reset.v",
         "rtl/rom.v",
         "rtl/ram.v",
-        "rtl/spi_controller.v",
         "verilog-65C02-microcode/generic/abh.v",
         "verilog-65C02-microcode/generic/abl.v",
         "verilog-65C02-microcode/generic/alu.v",
@@ -13,11 +12,11 @@
         "verilog-65C02-microcode/generic/microcode.v",
         "verilog-65C02-microcode/generic/regfile.v",
         "verilog-65C02-microcode/generic/cpu.v",
-        "6522/6522.srcs/sources_1/new/6522.v",
         "6551-ACIA/rtl/acia_brgen.v",
         "6551-ACIA/rtl/acia_rx.v",
         "6551-ACIA/rtl/acia_tx.v",
         "6551-ACIA/rtl/acia.v",
+        "6522-VIA/rtl/via.v",
         "rtl/top.v"
     ]
 }

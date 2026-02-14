@@ -5,9 +5,6 @@
 ; ========================================
 ; Hardware Definitions
 ; ========================================
-VIA_BASE_ADR = $6000
-VIA_PB       = VIA_BASE_ADR + 0
-VIA_DDRB     = VIA_BASE_ADR + 2
 
 ; I2C LCD address
 LCD_I2C_ADDR = $27
@@ -16,6 +13,7 @@ LCD_I2C_ADDR = $27
 ; Program Start
 ; ========================================
     .org $8000
+    .include "inc/addresses.s"
     .include "inc/1602-I2C.s"
 start:
     ; Initialize I2C

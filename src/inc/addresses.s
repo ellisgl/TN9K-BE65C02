@@ -1,0 +1,26 @@
+; Address map for TN9K-BE65C02 (Ben Eater's 6502-based computer)
+; VIA 6522 Register Addresses
+VIA_BASE_ADR  = $6000
+VIA_PB        = VIA_BASE_ADR + 0
+VIA_PA        = VIA_BASE_ADR + 1
+VIA_DDRB      = VIA_BASE_ADR + 2
+VIA_DDRA      = VIA_BASE_ADR + 3
+VIA_T1CL      = VIA_BASE_ADR + 4
+VIA_T1CH      = VIA_BASE_ADR + 5
+VIA_T1LL      = VIA_BASE_ADR + 6
+VIA_T1LH      = VIA_BASE_ADR + 7
+VIA_T2CL      = VIA_BASE_ADR + 8
+VIA_T2CH      = VIA_BASE_ADR + 9
+VIA_SR        = VIA_BASE_ADR + 10
+VIA_ACR       = VIA_BASE_ADR + 11
+VIA_PCR       = VIA_BASE_ADR + 12
+VIA_IFR       = VIA_BASE_ADR + 13
+VIA_IER       = VIA_BASE_ADR + 14
+VIA_PA_NOHS   = VIA_BASE_ADR + 15
+
+; ACIA 6551 Register Addresses
+ACIA_BASE_ADR = $5000
+ACIA_DATA     = ACIA_BASE_ADR + 0
+ACIA_STATUS   = ACIA_BASE_ADR + 1
+ACIA_CMD      = ACIA_BASE_ADR + 2
+ACIA_CTRL     = ACIA_BASE_ADR + 3
